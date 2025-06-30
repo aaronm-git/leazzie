@@ -1,29 +1,52 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-import Link from "next/link"
-import { AddCarDealDialog } from "./add-car-deal-dialog"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import Link from "next/link";
+import { AddCarDealDialog } from "@/components/add-car-deal-dialog";
+import { Database } from "@/database.types";
 
-interface CarDeal {
-  id: string
-  title: string
-  description: string | null
-  image_url: string | null
-  created_at: string
-}
+export function CarDealsGrid({
+  initialCarDeals,
+}: {
+  initialCarDeals: Database["public"]["Tables"]["car_deals"]["Row"][];
+}) {
+  const [carDeals, setCarDeals] =
+    useState<Database["public"]["Tables"]["car_deals"]["Row"][]>(
+      initialCarDeals
+    );
 
-interface CarDealsGridProps {
-  initialCarDeals: CarDeal[]
-}
+  const handleCarDealAdded = (
+    newCarDeal: Database["public"]["Tables"]["car_deals"]["Row"]
+  ) => {
+    setCarDeals((prev) => [newCarDeal, ...prev]);
+  };
 
-export function CarDealsGrid({ initialCarDeals }: CarDealsGridProps) {
-  const [carDeals, setCarDeals] = useState<CarDeal[]>(initialCarDeals)
-
-  const handleCarDealAdded = (newCarDeal: CarDeal) => {
-    setCarDeals((prev) => [newCarDeal, ...prev])
+  if (carDeals.length === 0) {
+    return (
+      <div className="col-span-full text-center py-12">
+        <div className="text-gray-400 mb-4">
+          <Plus className="h-12 w-12 mx-auto" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">
+          No car deals yet!
+        </h3>
+        <p className="text-gray-600 mb-4">
+          Get started by creating your first car deal to track lease offers.
+        </p>
+        <AddCarDealDialog onCarDealAdded={handleCarDealAdded}>
+          <Button>Create Your First Car Deal</Button>
+        </AddCarDealDialog>
+      </div>
+    );
   }
 
   return (
@@ -31,7 +54,9 @@ export function CarDealsGrid({ initialCarDeals }: CarDealsGridProps) {
       <header className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Car Deals</h1>
-          <p className="text-gray-600 mt-1">Track and compare lease deals across multiple vehicles</p>
+          <p className="text-gray-600 mt-1">
+            Track and compare lease deals across multiple vehicles
+          </p>
         </div>
         <AddCarDealDialog onCarDealAdded={handleCarDealAdded}>
           <Button className="flex items-center gap-2">
@@ -44,35 +69,39 @@ export function CarDealsGrid({ initialCarDeals }: CarDealsGridProps) {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {carDeals.map((deal) => (
           <Link href={`/${deal.id}/deals`} key={deal.id}>
-            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer pt-0 overflow-hidden">
               <CardHeader className="p-0">
                 <img
-                  src={deal.image_url || "/placeholder.svg?width=400&height=250&query=car"}
+                  src={
+                    deal.image_url ||
+                    "https://placehold.co/600x400?text=Car Deal"
+                  }
                   alt={deal.title}
-                  className="w-full h-40 object-cover rounded-t-lg"
+                  className="w-full h-40 object-cover object-center"
                 />
               </CardHeader>
-              <CardContent className="p-4">
-                <CardTitle className="text-lg mb-2">{deal.title}</CardTitle>
-                <CardDescription className="text-sm">{deal.description}</CardDescription>
+              <CardContent>
+                <CardTitle className="text-lg">{deal.title}</CardTitle>
+                <CardDescription>{deal.description}</CardDescription>
+                <p className="text-sm text-gray-500">
+                  {new Date(deal.created_at || "").toLocaleDateString()}
+                </p>
               </CardContent>
             </Card>
           </Link>
         ))}
 
-        {carDeals.length === 0 && (
-          <div className="col-span-full text-center py-12">
-            <div className="text-gray-400 mb-4">
-              <Plus className="h-12 w-12 mx-auto" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No car deals yet</h3>
-            <p className="text-gray-600 mb-4">Get started by creating your first car deal to track lease offers.</p>
-            <AddCarDealDialog onCarDealAdded={handleCarDealAdded}>
-              <Button>Create Your First Car Deal</Button>
-            </AddCarDealDialog>
-          </div>
-        )}
+        <AddCarDealDialog onCarDealAdded={handleCarDealAdded}>
+          <Card className="h-full shadow-none cursor-pointer border-2 p-0 bg-transparent border-primary/20 border-dashed transition-all duration-300 group">
+            <CardContent className="flex flex-row items-center justify-center h-full gap-2">
+              <Plus className="h-12 w-12 text-gray-400 group-hover:text-primary transition-all duration-300" />
+              <p className="text-xl font-bold text-gray-400 group-hover:text-primary transition-all duration-300">
+                Add New Car Deal
+              </p>
+            </CardContent>
+          </Card>
+        </AddCarDealDialog>
       </div>
     </div>
-  )
+  );
 }

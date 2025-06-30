@@ -16,12 +16,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createCarDeal } from "@/lib/actions";
-// import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
+import { Database } from "@/database.types";
 
 interface AddCarDealDialogProps {
   children: React.ReactNode;
-  onCarDealAdded: (carDeal: any) => void;
+  onCarDealAdded: (
+    carDeal: Database["public"]["Tables"]["car_deals"]["Row"]
+  ) => void;
 }
 
 export function AddCarDealDialog({
@@ -30,34 +33,68 @@ export function AddCarDealDialog({
 }: AddCarDealDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // const { toast } = useToast()
+  const supabase = createClient();
 
   const handleSubmit = async (formData: FormData) => {
     setIsLoading(true);
 
     try {
-      const result = await createCarDeal(formData);
+      const title = formData.get("title") as string;
+      const description = formData.get("description") as string;
+      const imageUrl = formData.get("image_url") as string;
 
-      if (result.error) {
-        toast({
-          title: "Error",
-          description: "Failed to create car deal. Please try again.",
-          variant: "destructive",
-        });
-      } else if (result.data) {
-        toast({
-          title: "Success",
-          description: "Car deal created successfully!",
-        });
-        onCarDealAdded(result.data);
+      // Validate required fields
+      if (!title?.trim()) {
+        toast.error("Title is required");
+        setIsLoading(false);
+        return;
+      }
+
+      // Insert the car deal into Supabase
+      const { data, error } = await supabase
+        .from("car_deals")
+        .insert([
+          {
+            title: title.trim(),
+            description: description?.trim() || null,
+            image_url: imageUrl?.trim() || null,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase error:", error);
+
+        // Handle specific Supabase errors
+        if (error.code === "23505") {
+          toast.error("A car deal with this title already exists");
+        } else if (error.code === "42501") {
+          toast.error("You don't have permission to create car deals");
+        } else if (error.message.includes("network")) {
+          toast.error(
+            "Network error. Please check your connection and try again"
+          );
+        } else {
+          toast.error(`Failed to create car deal: ${error.message}`);
+        }
+        return;
+      }
+
+      if (data) {
+        toast.success("Car deal created successfully! 🚗");
+        onCarDealAdded(data);
         setIsOpen(false);
+
+        // Reset form by getting a fresh form reference
+        const form = document.querySelector("form") as HTMLFormElement;
+        if (form) {
+          form.reset();
+        }
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
+      console.error("Unexpected error:", error);
+      toast.error("An unexpected error occurred. Please try again");
     } finally {
       setIsLoading(false);
     }
@@ -109,6 +146,7 @@ export function AddCarDealDialog({
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
+              disabled={isLoading}
             >
               Cancel
             </Button>
