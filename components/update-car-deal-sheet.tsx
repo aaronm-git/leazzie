@@ -18,14 +18,27 @@ import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Trash2 } from "lucide-react";
 
 export function UpdateCarDealSheet({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = createClient();
   const { carDeal } = useCarDeal();
   const router = useRouter();
+
   const handleSubmit = async (formData: FormData) => {
     console.log("handleSubmit");
     const title = formData.get("title") as string;
@@ -46,8 +59,20 @@ export function UpdateCarDealSheet({
     }
   };
 
-  const supabase = createClient();
+  const handleDelete = async () => {
+    const { error } = await supabase
+      .from("car_deals")
+      .delete()
+      .eq("id", carDeal.id);
 
+    if (error) {
+      toast.error("Failed to delete car deal");
+      console.error(error);
+    } else {
+      toast.success("Car deal deleted successfully");
+      router.push("/");
+    }
+  };
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -97,6 +122,35 @@ export function UpdateCarDealSheet({
           <Button type="submit" form="update-car-deal-form">
             Update Car Deal
           </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button type="button" variant="destructive">
+                Delete Car Deal
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Car Deal</DialogTitle>
+              </DialogHeader>
+              <DialogDescription>
+                Are you sure you want to delete the <b>{carDeal.title}</b> car
+                deal?
+              </DialogDescription>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button>Cancel</Button>
+                </DialogClose>
+                <Button
+                  type="button"
+                  onClick={handleDelete}
+                  variant="destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete Car Deal
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <SheetClose asChild>
             <Button variant="outline">Close</Button>
           </SheetClose>

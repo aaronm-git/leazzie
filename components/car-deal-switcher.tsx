@@ -43,16 +43,16 @@ export function CarDealSwitcher() {
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
         align="start"
         side="right"
         sideOffset={4}
+        className="max-w-sm"
       >
         <DropdownMenuLabel className="text-muted-foreground text-xs">
           Car Deal Dashboards
         </DropdownMenuLabel>
         {allCarDeals?.map((deal) => (
-          <DropdownMenuItem key={deal.id} asChild>
+          <DropdownMenuItem key={deal.id} asChild title={deal.title + " - " + deal.description}>
             <Link href={`/${deal.id}`} className="gap-2 p-2">
               {deal.image_url ? (
                 <img
@@ -65,8 +65,8 @@ export function CarDealSwitcher() {
                   <Car className="size-4 shrink-0" />
                 </div>
               )}
-              <div className="flex-1 text-left space-y-1">
-                <div className="font-medium">{deal.title}</div>
+              <div className="flex-1 text-left space-y-1 min-w-0">
+                <div className="font-medium truncate">{deal.title}</div>
                 {deal.description && (
                   <div className="text-xs text-muted-foreground truncate">
                     {deal.description}
