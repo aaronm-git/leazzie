@@ -46,7 +46,7 @@ export function CarDealSwitcher() {
         align="start"
         side="right"
         sideOffset={4}
-        className="max-w-sm"
+        className="max-w-xs"
       >
         <DropdownMenuLabel className="text-muted-foreground text-xs">
           Car Deal Dashboards

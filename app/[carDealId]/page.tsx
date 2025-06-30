@@ -2,9 +2,10 @@
 
 import { useCarDeal } from "@/providers/car-deal-provider";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { EmptyDealsState } from "@/components/empty-deals-state";
+import { FileText, Plus } from "lucide-react";
+import { EmptyTableState } from "@/components/empty-table-state";
 import { DealsTable } from "@/components/deals-table";
+import AddDealDialog from "@/components/add-deal-dialog";
 
 export default function DealsPage() {
   const { carDeal, deals } = useCarDeal();
@@ -14,17 +15,26 @@ export default function DealsPage() {
       {/* <CarDealHeader /> */}
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-1">Running Deals</h1>
+          <h1 className="text-3xl font-bold mb-1 flex items-center gap-2">
+            <FileText className="h-7 w-7" />
+            Running Deals
+          </h1>
           <p className="text-muted-foreground">
             All lease deals for {carDeal.title}
           </p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add New Deal
-        </Button>
+
+        <AddDealDialog />
       </div>
-      {!deals || deals.length === 0 ? <EmptyDealsState /> : <DealsTable />}
+      {!deals || deals.length === 0 ? (
+        <EmptyTableState
+          addDealDialog={<AddDealDialog />}
+          title="No deals yet"
+          description="Start tracking lease deals for this car by adding your first offer."
+        />
+      ) : (
+        <DealsTable />
+      )}
     </>
   );
 }

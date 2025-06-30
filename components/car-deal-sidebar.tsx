@@ -20,11 +20,17 @@ import { Building2, Users, FileText, FileCog } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { CarDealSwitcher } from "./car-deal-switcher";
 import { useCarDeal } from "@/providers/car-deal-provider";
-import { Settings } from "lucide-react";
 import { UpdateCarDealSheet } from "@/components/update-car-deal-sheet";
+
+import { usePathname } from "next/navigation";
 
 export function CarDealSidebar() {
   const { deals, dealerships, contacts, carDealId } = useCarDeal();
+  const pathname = usePathname();
+
+  const isDealsPage = pathname === `/${carDealId}`;
+  const isDealershipsPage = pathname === `/${carDealId}/dealerships`;
+  const isContactsPage = pathname === `/${carDealId}/contacts`;
 
   return (
     <Sidebar>
@@ -51,8 +57,8 @@ export function CarDealSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href={`/${carDealId}/deals`}>
+                <SidebarMenuButton asChild isActive={isDealsPage}>
+                  <Link href={`/${carDealId}`}>
                     <FileText className="h-4 w-4" />
                     <span>Deals</span>
                     <Badge variant="secondary" className="ml-auto">
@@ -62,7 +68,7 @@ export function CarDealSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={isDealershipsPage}>
                   <Link href={`/${carDealId}/dealerships`}>
                     <Building2 className="h-4 w-4" />
                     <span>Dealerships</span>
@@ -73,7 +79,7 @@ export function CarDealSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={isContactsPage}>
                   <Link href={`/${carDealId}/contacts`}>
                     <Users className="h-4 w-4" />
                     <span>Contacts</span>
