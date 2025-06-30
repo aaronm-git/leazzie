@@ -18,7 +18,14 @@ const CarDealContext = createContext<CarDealContextType | undefined>(undefined);
 // Provider props
 interface CarDealProviderProps {
   children: ReactNode;
-  initialData: Omit<CarDealContextType, "refreshData" | "isLoading">;
+  initialData: Omit<
+    CarDealContextType,
+    | "refreshData"
+    | "refreshDeals"
+    | "refreshDealerships"
+    | "refreshContacts"
+    | "isLoading"
+  >;
 }
 
 // Provider component

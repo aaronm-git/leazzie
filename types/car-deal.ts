@@ -3,7 +3,7 @@ import type { Tables } from "@/database.types";
 export interface DealWithDealership extends Tables<'deals'> {
   dealerships?: {
     name: string;
-  };
+  } | null;
 }
 
 // Context data structure

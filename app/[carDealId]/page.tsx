@@ -1,8 +1,7 @@
 "use client";
 
 import { useCarDeal } from "@/providers/car-deal-provider";
-import { Button } from "@/components/ui/button";
-import { FileText, Plus } from "lucide-react";
+import { FileText } from "lucide-react";
 import { EmptyTableState } from "@/components/empty-table-state";
 import { DealsTable } from "@/components/deals-table";
 import AddDealDialog from "@/components/add-deal-dialog";
