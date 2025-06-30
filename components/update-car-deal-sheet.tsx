@@ -10,11 +10,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { toast } from "sonner";
 import { useCarDeal } from "@/providers/car-deal-provider";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 export function UpdateCarDealSheet({
   children,
@@ -22,11 +25,28 @@ export function UpdateCarDealSheet({
   children: React.ReactNode;
 }) {
   const { carDeal } = useCarDeal();
-
+  const router = useRouter();
   const handleSubmit = async (formData: FormData) => {
+    console.log("handleSubmit");
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
+    const image_url = formData.get("image_url") as string;
+
+    const { error } = await supabase
+      .from("car_deals")
+      .update({ title, description, image_url })
+      .eq("id", carDeal.id);
+
+    if (error) {
+      toast.error("Failed to update car deal");
+      console.error(error);
+    } else {
+      toast.success("Car deal updated successfully");
+      router.refresh();
+    }
   };
+
+  const supabase = createClient();
 
   return (
     <Sheet>
@@ -37,6 +57,7 @@ export function UpdateCarDealSheet({
           <SheetDescription>Update the car deal details</SheetDescription>
         </SheetHeader>
         <form
+          id="update-car-deal-form"
           action={handleSubmit}
           className="grid flex-1 auto-rows-min gap-6 px-4 space-y-4"
         >
@@ -73,7 +94,9 @@ export function UpdateCarDealSheet({
           </div>
         </form>
         <SheetFooter>
-          <Button type="submit">Update Car Deal</Button>
+          <Button type="submit" form="update-car-deal-form">
+            Update Car Deal
+          </Button>
           <SheetClose asChild>
             <Button variant="outline">Close</Button>
           </SheetClose>

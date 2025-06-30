@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body>
         <main className="container mx-auto">{children}</main>
         <Toaster position="top-right" richColors duration={3000} />
