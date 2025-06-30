@@ -16,9 +16,17 @@ import {
 } from "./ui/select";
 import { useCarDeal } from "@/providers/car-deal-provider";
 
-export default function AddContactDialog() {
+interface AddContactDialogProps {
+  onContactCreated?: (contactId: string) => void;
+}
+
+export default function AddContactDialog({
+  onContactCreated,
+}: AddContactDialogProps) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
@@ -29,15 +37,24 @@ export default function AddContactDialog() {
         <DialogHeader>
           <DialogTitle>Add New Contact</DialogTitle>
         </DialogHeader>
-        <AddContactForm />
+        <AddContactForm
+          onSuccess={(contactId) => {
+            setOpen(false);
+            onContactCreated?.(contactId);
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
-function AddContactForm() {
+interface AddContactFormProps {
+  onSuccess?: (contactId: string) => void;
+}
+
+function AddContactForm({ onSuccess }: AddContactFormProps) {
   const supabase = createClient();
-  const { carDeal, dealerships } = useCarDeal();
+  const { carDeal, dealerships, refreshContacts } = useCarDeal();
   const [formData, setFormData] = useState<Partial<Tables<"contacts">>>({
     name: "",
     email: "",
@@ -48,14 +65,20 @@ function AddContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("contacts").insert({
-      ...formData,
-      name: formData.name || "",
-    });
+    e.stopPropagation(); // Prevent parent form submission
+    const { data, error } = await supabase
+      .from("contacts")
+      .insert({
+        ...formData,
+        name: formData.name || "",
+      })
+      .select();
     if (error) {
       console.error("Error adding contact:", error);
     } else {
       console.log("Contact added successfully");
+      // Refresh only contacts to show the new contact
+      await refreshContacts();
       // Reset form
       setFormData({
         name: "",
@@ -64,6 +87,10 @@ function AddContactForm() {
         title: "",
         dealership_id: null,
       });
+      // Call success callback with the new contact ID
+      if (data && data[0] && onSuccess) {
+        onSuccess(data[0].id);
+      }
     }
   };
 

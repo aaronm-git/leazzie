@@ -9,6 +9,16 @@ import { Tables } from "@/database.types";
 import { useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { useCarDeal } from "@/providers/car-deal-provider";
+import AddDealershipDialog from "./add-dealership-dialog";
+import AddContactDialog from "./add-contact-dialog";
 
 export default function AddDealDialog() {
   return (
@@ -31,6 +41,10 @@ export default function AddDealDialog() {
 
 function AddDealForm() {
   const supabase = createClient();
+  const { carDeal, dealerships, contacts, refreshDeals } = useCarDeal();
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(
+    null
+  );
   const [formData, setFormData] = useState<Tables<"deals">>({
     id: "",
     product_title: "",
@@ -38,7 +52,7 @@ function AddDealForm() {
     product_link: "",
     product_specs: "",
     additional_fees: null,
-    car_deal_id: null,
+    car_deal_id: carDeal?.id || null,
     created_at: null,
     dealer_incentives: null,
     dealership_id: null,
@@ -54,11 +68,57 @@ function AddDealForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("deals").insert(formData);
+
+    // Prepare data for insertion (exclude auto-generated fields)
+    const insertData = {
+      product_title: formData.product_title,
+      product_image_url: formData.product_image_url || null,
+      product_link: formData.product_link || null,
+      product_specs: formData.product_specs || null,
+      additional_fees: formData.additional_fees,
+      car_deal_id: carDeal?.id || null,
+      dealer_incentives: formData.dealer_incentives,
+      dealership_id: formData.dealership_id,
+      down_payment: formData.down_payment,
+      interest_rate: formData.interest_rate,
+      is_disqualified: formData.is_disqualified,
+      lease_term: formData.lease_term,
+      msrp: formData.msrp,
+      residual_value: formData.residual_value,
+      selling_price: formData.selling_price,
+      tax_rate: formData.tax_rate,
+    };
+
+    const { error } = await supabase.from("deals").insert(insertData);
     if (error) {
       console.error("Error adding deal:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
     } else {
       console.log("Deal added successfully");
+      // Refresh only deals to show the new deal
+      await refreshDeals();
+      // Reset form
+      setFormData({
+        id: "",
+        product_title: "",
+        product_image_url: "",
+        product_link: "",
+        product_specs: "",
+        additional_fees: null,
+        car_deal_id: carDeal?.id || null,
+        created_at: null,
+        dealer_incentives: null,
+        dealership_id: null,
+        down_payment: null,
+        interest_rate: null,
+        is_disqualified: null,
+        lease_term: null,
+        msrp: null,
+        residual_value: null,
+        selling_price: null,
+        tax_rate: null,
+      });
+      setSelectedContactId(null);
     }
   };
 
@@ -196,6 +256,77 @@ function AddDealForm() {
                   e.target.value ? parseFloat(e.target.value) : null
                 )
               }
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Dealership & Contact Information */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">
+          Dealership & Contact Information
+        </h3>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Dealership Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="dealership">Dealership *</Label>
+            {dealerships && dealerships.length > 0 && (
+              <Select
+                value={formData?.dealership_id || ""}
+                onValueChange={(value) =>
+                  handleChange("dealership_id", value || null)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a dealership" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dealerships.map((dealership) => (
+                    <SelectItem key={dealership.id} value={dealership.id}>
+                      {dealership.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            <AddDealershipDialog
+              onDealershipCreated={(dealershipId) => {
+                handleChange("dealership_id", dealershipId);
+              }}
+            />
+          </div>
+
+          {/* Contact Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="contact">Contact (Optional)</Label>
+            {contacts && contacts.length > 0 && (
+              <Select
+                value={selectedContactId || ""}
+                onValueChange={(value) => setSelectedContactId(value || null)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a contact" />
+                </SelectTrigger>
+                <SelectContent>
+                  {contacts
+                    .filter(
+                      (contact) =>
+                        !formData.dealership_id ||
+                        contact.dealership_id === formData.dealership_id
+                    )
+                    .map((contact) => (
+                      <SelectItem key={contact.id} value={contact.id}>
+                        {contact.name} {contact.title && `(${contact.title})`}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            )}
+            <AddContactDialog
+              onContactCreated={(contactId) => {
+                setSelectedContactId(contactId);
+              }}
             />
           </div>
         </div>

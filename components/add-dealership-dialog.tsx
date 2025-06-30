@@ -9,9 +9,17 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { useCarDeal } from "@/providers/car-deal-provider";
 
-export default function AddDealershipDialog() {
+interface AddDealershipDialogProps {
+  onDealershipCreated?: (dealershipId: string) => void;
+}
+
+export default function AddDealershipDialog({
+  onDealershipCreated,
+}: AddDealershipDialogProps) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
@@ -22,15 +30,24 @@ export default function AddDealershipDialog() {
         <DialogHeader>
           <DialogTitle>Add New Dealership</DialogTitle>
         </DialogHeader>
-        <AddDealershipForm />
+        <AddDealershipForm
+          onSuccess={(dealershipId) => {
+            setOpen(false);
+            onDealershipCreated?.(dealershipId);
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
-function AddDealershipForm() {
+interface AddDealershipFormProps {
+  onSuccess?: (dealershipId: string) => void;
+}
+
+function AddDealershipForm({ onSuccess }: AddDealershipFormProps) {
   const supabase = createClient();
-  const { carDeal } = useCarDeal();
+  const { carDeal, refreshDealerships } = useCarDeal();
   const [formData, setFormData] = useState<Partial<Tables<"dealerships">>>({
     name: "",
     car_deal_id: carDeal?.id || null,
@@ -38,20 +55,30 @@ function AddDealershipForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("dealerships").insert({
-      ...formData,
-      name: formData.name || "",
-      car_deal_id: carDeal?.id || null,
-    });
+    e.stopPropagation(); // Prevent parent form submission
+    const { data, error } = await supabase
+      .from("dealerships")
+      .insert({
+        ...formData,
+        name: formData.name || "",
+        car_deal_id: carDeal?.id || null,
+      })
+      .select();
     if (error) {
       console.error("Error adding dealership:", error);
     } else {
       console.log("Dealership added successfully");
+      // Refresh only dealerships to show the new dealership
+      await refreshDealerships();
       // Reset form
       setFormData({
         name: "",
         car_deal_id: carDeal?.id || null,
       });
+      // Call success callback with the new dealership ID
+      if (data && data[0] && onSuccess) {
+        onSuccess(data[0].id);
+      }
     }
   };
 

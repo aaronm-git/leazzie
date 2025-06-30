@@ -16,13 +16,13 @@ export default async function DealsPage({
   try {
     const data = await fetchCarDealData(carDealId);
 
-    const contextValue = {
+    const initialData = {
       ...data,
       carDealId,
     };
 
     return (
-      <CarDealProvider value={contextValue}>
+      <CarDealProvider initialData={initialData}>
         <SidebarProvider>
           <CarDealSidebar />
           <SidebarInset>
