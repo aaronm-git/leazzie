@@ -68,7 +68,7 @@ export function CarDealsGrid({
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {carDeals.map((deal) => (
-          <Link href={`/${deal.id}/deals`} key={deal.id}>
+          <Link href={`/${deal.id}/`} key={deal.id}>
             <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer pt-0 overflow-hidden border-2 border-primary/20 hover:border-primary/50">
               <CardHeader className="p-0">
                 <img
