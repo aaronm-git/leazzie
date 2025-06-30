@@ -1,40 +1,30 @@
-import { notFound } from "next/navigation";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { CarDealSidebar } from "@/components/car-deal-sidebar";
-import { CarDealHeader } from "@/components/car-deal-header";
-import { CarDealContent } from "@/components/car-deal-content";
-import { CarDealProvider } from "@/providers/car-deal-provider";
-import { fetchCarDealData } from "@/lib/car-deal-data";
+"use client";
 
-export default async function DealsPage({
-  params,
-}: {
-  params: Promise<{ carDealId: string }>;
-}) {
-  const { carDealId } = await params;
+import { useCarDeal } from "@/providers/car-deal-provider";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { EmptyDealsState } from "@/components/empty-deals-state";
+import { DealsTable } from "@/components/deals-table";
 
-  try {
-    const data = await fetchCarDealData(carDealId);
+export default function DealsPage() {
+  const { carDeal, deals } = useCarDeal();
 
-    const contextValue = {
-      ...data,
-      carDealId,
-    };
-
-    return (
-      <CarDealProvider value={contextValue}>
-        <SidebarProvider>
-          <CarDealSidebar />
-          <SidebarInset>
-            <div className="p-6">
-              <CarDealHeader />
-              <CarDealContent />
-            </div>
-          </SidebarInset>
-        </SidebarProvider>
-      </CarDealProvider>
-    );
-  } catch {
-    notFound();
-  }
+  return (
+    <>
+      {/* <CarDealHeader /> */}
+      <div className="flex items-center justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-1">Running Deals</h1>
+          <p className="text-muted-foreground">
+            All lease deals for {carDeal.title}
+          </p>
+        </div>
+        <Button className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Add New Deal
+        </Button>
+      </div>
+      {!deals || deals.length === 0 ? <EmptyDealsState /> : <DealsTable />}
+    </>
+  );
 }

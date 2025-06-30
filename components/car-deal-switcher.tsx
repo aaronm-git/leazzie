@@ -18,7 +18,7 @@ export function CarDealSwitcher() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild className="border">
         <SidebarMenuButton
           size="lg"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
@@ -28,7 +28,7 @@ export function CarDealSwitcher() {
             <img
               src={carDeal.image_url}
               alt={carDeal.title}
-              className="w-10 h-10 object-cover rounded-md"
+              className="w-8 h-8 object-cover rounded-md border"
             />
           ) : (
             <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-lg">
@@ -58,7 +58,7 @@ export function CarDealSwitcher() {
                 <img
                   src={deal.image_url}
                   alt={deal.title}
-                  className="w-8 h-8 object-cover rounded-md"
+                  className="w-8 h-8 object-cover rounded-md border"
                 />
               ) : (
                 <div className="flex size-8 items-center justify-center rounded-md border">

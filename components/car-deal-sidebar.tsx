@@ -12,13 +12,15 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { Building2, Users, FileText } from "lucide-react";
+import { Building2, Users, FileText, FileCog } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { CarDealSwitcher } from "./car-deal-switcher";
 import { useCarDeal } from "@/providers/car-deal-provider";
+import { Settings } from "lucide-react";
 
 export function CarDealSidebar() {
   const { deals, dealerships, contacts, carDealId } = useCarDeal();
@@ -48,7 +50,7 @@ export function CarDealSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive>
+                <SidebarMenuButton asChild>
                   <Link href={`/${carDealId}/deals`}>
                     <FileText className="h-4 w-4" />
                     <span>Deals</span>
@@ -77,6 +79,15 @@ export function CarDealSidebar() {
                     <Badge variant="secondary" className="ml-auto">
                       {contacts?.length || 0}
                     </Badge>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarSeparator />
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href={`/${carDealId}/settings`}>
+                    <FileCog className="h-4 w-4" />
+                    <span>Deal Settings</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
