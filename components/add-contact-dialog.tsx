@@ -54,7 +54,7 @@ interface AddContactFormProps {
 
 function AddContactForm({ onSuccess }: AddContactFormProps) {
   const supabase = createClient();
-  const { carDeal, dealerships, refreshContacts } = useCarDeal();
+  const { dealerships, refreshContacts } = useCarDeal();
   const [formData, setFormData] = useState<Partial<Tables<"contacts">>>({
     name: "",
     email: "",
