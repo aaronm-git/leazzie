@@ -33,13 +33,13 @@ export function CarDealsGrid({
   if (carDeals.length === 0) {
     return (
       <div className="col-span-full text-center py-12">
-        <div className="text-gray-400 mb-4">
+        <div className="text-foreground mb-4">
           <Plus className="h-12 w-12 mx-auto" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+        <h3 className="text-lg font-medium text-foreground mb-2">
           No car deals yet!
         </h3>
-        <p className="text-gray-600 mb-4">
+        <p className="text-muted-foreground mb-4">
           Get started by creating your first car deal to track lease offers.
         </p>
         <AddCarDealDialog onCarDealAdded={handleCarDealAdded}>
@@ -53,8 +53,8 @@ export function CarDealsGrid({
     <div className="p-8">
       <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Car Deals</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">My Car Deals</h1>
+          <p className="text-muted-foreground mt-1">
             Track and compare lease deals across multiple vehicles
           </p>
         </div>
@@ -69,7 +69,7 @@ export function CarDealsGrid({
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {carDeals.map((deal) => (
           <Link href={`/${deal.id}/deals`} key={deal.id}>
-            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer pt-0 overflow-hidden">
+            <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer pt-0 overflow-hidden border-2 border-primary/20 hover:border-primary/50">
               <CardHeader className="p-0">
                 <img
                   src={

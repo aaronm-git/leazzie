@@ -13,10 +13,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body>
-        {children}
-        <Toaster position="top-right" richColors />
+        <main className="container mx-auto">{children}</main>
+        <Toaster position="top-right" richColors duration={3000} />
       </body>
     </html>
   );
