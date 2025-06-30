@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { CarDealSwitcher } from "./car-deal-switcher";
 import { useCarDeal } from "@/providers/car-deal-provider";
 import { Settings } from "lucide-react";
+import { UpdateCarDealSheet } from "@/components/update-car-deal-sheet";
 
 export function CarDealSidebar() {
   const { deals, dealerships, contacts, carDealId } = useCarDeal();
@@ -84,12 +85,12 @@ export function CarDealSidebar() {
               </SidebarMenuItem>
               <SidebarSeparator />
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href={`/${carDealId}/settings`}>
+                <UpdateCarDealSheet>
+                  <SidebarMenuButton>
                     <FileCog className="h-4 w-4" />
                     <span>Deal Settings</span>
-                  </Link>
-                </SidebarMenuButton>
+                  </SidebarMenuButton>
+                </UpdateCarDealSheet>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
