@@ -7,6 +7,8 @@ import LeazzyLogo2 from "@/public/favicon_io/favicon-16x16.png";
 import LeazzyLogo3 from "@/public/favicon_io/android-chrome-192x192.png";
 import LeazzyLogo4 from "@/public/favicon_io/android-chrome-512x512.png";
 
+import Header from "@/components/layout/header";
+
 const favicons = [LeazzyLogo, LeazzyLogo2, LeazzyLogo3, LeazzyLogo4];
 
 export const metadata: Metadata = {
@@ -27,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <Header />
         <main className="container mx-auto">{children}</main>
         <Toaster position="top-right" richColors duration={3000} />
       </body>

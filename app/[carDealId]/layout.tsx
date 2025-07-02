@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { CarDealSidebar } from "@/components/car-deal-sidebar";
 import { CarDealProvider } from "@/providers/car-deal-provider";
 import { fetchCarDealData } from "@/lib/car-deal-data";
-
+import { Analytics } from "@vercel/analytics/next"
 export default async function DealsPage({
   children,
   params,
@@ -28,6 +28,7 @@ export default async function DealsPage({
           <SidebarInset>
             <div className="p-6">{children}</div>
           </SidebarInset>
+          <Analytics />
         </SidebarProvider>
       </CarDealProvider>
     );
