@@ -21,14 +21,14 @@ export function CarDealSwitcher() {
       <DropdownMenuTrigger asChild className="border">
         <SidebarMenuButton
           size="lg"
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:text-sidebar-primary hover:bg-stone-200"
           title={carDeal.title}
         >
           {carDeal.image_url ? (
             <img
               src={carDeal.image_url}
               alt={carDeal.title}
-              className="w-8 h-8 object-cover rounded-md border"
+              className="h-8 w-8 rounded-md border object-cover"
             />
           ) : (
             <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-lg">
@@ -52,23 +52,27 @@ export function CarDealSwitcher() {
           Car Deal Dashboards
         </DropdownMenuLabel>
         {allCarDeals?.map((deal) => (
-          <DropdownMenuItem key={deal.id} asChild title={deal.title + " - " + deal.description}>
+          <DropdownMenuItem
+            key={deal.id}
+            asChild
+            title={deal.title + " - " + deal.description}
+          >
             <Link href={`/${deal.id}`} className="gap-2 p-2">
               {deal.image_url ? (
                 <img
                   src={deal.image_url}
                   alt={deal.title}
-                  className="w-8 h-8 object-cover rounded-md border"
+                  className="h-8 w-8 rounded-md border object-cover"
                 />
               ) : (
                 <div className="flex size-8 items-center justify-center rounded-md border">
                   <Car className="size-4 shrink-0" />
                 </div>
               )}
-              <div className="flex-1 text-left space-y-1 min-w-0">
-                <div className="font-medium truncate">{deal.title}</div>
+              <div className="min-w-0 flex-1 space-y-1 text-left">
+                <div className="truncate font-medium">{deal.title}</div>
                 {deal.description && (
-                  <div className="text-xs text-muted-foreground truncate">
+                  <div className="text-muted-foreground truncate text-xs">
                     {deal.description}
                   </div>
                 )}

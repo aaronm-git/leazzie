@@ -43,6 +43,23 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* color overrides */
+@theme inline {
+  --color-primary-foreground: var(--primary);
+  --color-primary: var(--secondary);
+  --color-sidebar-primary: var(--primary);
+  --color-sidebar-accent: var(--secondary);
+  --color-sidebar-accent-foreground: var(--primary);
+  --color-destructive: var(--danger);
+  /* --color-primary-background: #003049; */
+  /* --color-secondary-foreground: #00f5d4;
+  --color-secondary: #00f5d4; */
+  /* --color-accent-foreground: #00f5d4;
+  --color-accent: #00f5d4;
+  --color-muted-foreground: #00f5d4;
+  --color-muted: #00f5d4; */
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -76,6 +93,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* color overrides */
+  --primary: #003049;
+  --secondary: #00f5d4;
+  --danger: #e63946;
 }
 
 .dark {
@@ -116,6 +138,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

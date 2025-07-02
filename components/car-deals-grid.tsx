@@ -69,7 +69,7 @@ export function CarDealsGrid({
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {carDeals.map((deal) => (
           <Link href={`/${deal.id}/`} key={deal.id}>
-            <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer pt-0 overflow-hidden border-2 border-primary/20 hover:border-primary/50">
+            <Card className="h-full hover:shadow-lg transition-all duration-300 cursor-pointer pt-0 overflow-hidden border-2 border-gray-200 hover:border-primary/50">
               <CardHeader className="p-0">
                 <img
                   src={
@@ -92,7 +92,7 @@ export function CarDealsGrid({
         ))}
 
         <AddCarDealDialog onCarDealAdded={handleCarDealAdded}>
-          <Card className="h-full shadow-none cursor-pointer border-2 p-0 bg-transparent border-primary/20 border-dashed transition-all duration-300 group">
+          <Card className="h-full shadow-none cursor-pointer border-2 p-0 bg-transparent border-gray-200 border-dashed transition-all duration-300 group">
             <CardContent className="flex flex-row items-center justify-center h-full gap-2">
               <Plus className="h-12 w-12 text-gray-400 group-hover:text-primary transition-all duration-300" />
               <p className="text-xl font-bold text-gray-400 group-hover:text-primary transition-all duration-300">

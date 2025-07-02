@@ -24,6 +24,13 @@ import { UpdateCarDealSheet } from "@/components/update-car-deal-sheet";
 
 import { usePathname } from "next/navigation";
 
+type SidebarMenuItem = {
+  label?: string;
+  href?: string;
+  icon?: React.ReactNode;
+  type: "link" | "button" | "separator";
+};
+
 export function CarDealSidebar() {
   const { deals, dealerships, contacts, carDealId } = useCarDeal();
   const pathname = usePathname();
@@ -32,15 +39,45 @@ export function CarDealSidebar() {
   const isDealershipsPage = pathname === `/${carDealId}/dealerships`;
   const isContactsPage = pathname === `/${carDealId}/contacts`;
 
+  const sideBarMenuItems: SidebarMenuItem[] = [
+    {
+      label: "Deals",
+      href: `/${carDealId}`,
+      icon: <FileText className="h-4 w-4" />,
+      type: "link",
+    },
+    {
+      label: "Dealerships",
+      href: `/${carDealId}/dealerships`,
+      icon: <Building2 className="h-4 w-4" />,
+      type: "link",
+    },
+    {
+      label: "Contacts",
+      href: `/${carDealId}/contacts`,
+      icon: <Users className="h-4 w-4" />,
+      type: "link",
+    },
+    {
+      type: "separator",
+    },
+    {
+      label: "Deal Settings",
+      href: `/${carDealId}/settings`,
+      icon: <FileCog className="h-4 w-4" />,
+      type: "button",
+    },
+  ];
+
   return (
     <Sidebar>
       <SidebarHeader>
         <Link href="/">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex h-20 items-center justify-between">
             <img
               src={LeazzyLogo.src}
               alt="Leazzy.com Logo"
-              className="object-cover object-center w-48"
+              className="w-48 object-cover object-center"
             />
           </div>
         </Link>
@@ -56,48 +93,42 @@ export function CarDealSidebar() {
           <SidebarGroupLabel>Manage</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isDealsPage}>
-                  <Link href={`/${carDealId}`}>
-                    <FileText className="h-4 w-4" />
-                    <span>Deals</span>
-                    <Badge variant="secondary" className="ml-auto">
-                      {deals?.length || 0}
-                    </Badge>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isDealershipsPage}>
-                  <Link href={`/${carDealId}/dealerships`}>
-                    <Building2 className="h-4 w-4" />
-                    <span>Dealerships</span>
-                    <Badge variant="secondary" className="ml-auto">
-                      {dealerships?.length || 0}
-                    </Badge>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isContactsPage}>
-                  <Link href={`/${carDealId}/contacts`}>
-                    <Users className="h-4 w-4" />
-                    <span>Contacts</span>
-                    <Badge variant="secondary" className="ml-auto">
-                      {contacts?.length || 0}
-                    </Badge>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarSeparator />
-              <SidebarMenuItem>
-                <UpdateCarDealSheet>
-                  <SidebarMenuButton>
-                    <FileCog className="h-4 w-4" />
-                    <span>Deal Settings</span>
-                  </SidebarMenuButton>
-                </UpdateCarDealSheet>
-              </SidebarMenuItem>
+              {sideBarMenuItems.map((item, index) => {
+                if (item.type === "separator") {
+                  return <SidebarSeparator key={index} />;
+                }
+
+                if (item.type === "button") {
+                  return (
+                    <SidebarMenuItem key={item.label}>
+                      <UpdateCarDealSheet>
+                        <SidebarMenuButton
+                          isActive={item.href === pathname}
+                          className="hover:not-[.active]:bg-stone-200"
+                        >
+                          <FileCog className="h-4 w-4" />
+                          <span>Deal Settings</span>
+                        </SidebarMenuButton>
+                      </UpdateCarDealSheet>
+                    </SidebarMenuItem>
+                  );
+                }
+
+                return (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={item.href === pathname}
+                      className="hover:not-[data-active=true]:bg-stone-200"
+                    >
+                      <Link href={item.href || `/${carDealId}`}>
+                        {item.icon}
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
