@@ -16,6 +16,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Tables } from "@/database.types";
+import Image from "next/image";
 
 export function CarDealSwitcher() {
   const { offers } = useOffers();
@@ -55,7 +56,7 @@ export function CarDealSwitcher() {
     if (carDealId) {
       fetchCarDeals();
     }
-  }, [carDealId]);
+  }, [carDealId, supabase]);
 
   if (loading || !carDeal) {
     return (
@@ -79,10 +80,12 @@ export function CarDealSwitcher() {
           title={carDeal.title}
         >
           {carDeal.image_url ? (
-            <img
+            <Image
               src={carDeal.image_url}
               alt={carDeal.title}
               className="h-8 w-8 rounded-md border object-cover"
+              width={32}
+              height={32}
             />
           ) : (
             <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-lg">
@@ -115,10 +118,12 @@ export function CarDealSwitcher() {
           >
             <Link href={`/${deal.id}`} className="gap-2 p-2">
               {deal.image_url ? (
-                <img
+                <Image
                   src={deal.image_url}
                   alt={deal.title}
                   className="h-8 w-8 rounded-md border object-cover"
+                  width={32}
+                  height={32}
                 />
               ) : (
                 <div className="flex size-8 items-center justify-center rounded-md border">

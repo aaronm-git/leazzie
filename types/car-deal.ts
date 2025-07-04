@@ -1,6 +1,6 @@
 import type { Tables } from "@/database.types";
 
-export interface DealWithDealership extends Tables<'deals'> {
+export interface DealWithDealership extends Tables<'offers'> {
   dealerships?: {
     name: string;
   } | null;

@@ -32,7 +32,7 @@ export async function fetchCarDealData(carDealId: string): Promise<CarDealData> 
 
   // Fetch deals with dealership info
   const { data: deals } = await supabase
-    .from("deals")
+    .from("offers")
     .select(
       `
       *,

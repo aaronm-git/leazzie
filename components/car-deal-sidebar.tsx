@@ -14,15 +14,14 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { Building2, Users, FileText, FileCog } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { CarDealSwitcher } from "./car-deal-switcher";
-import { useOffers } from "@/providers/offer-provider";
 import { UpdateCarDealSheet } from "@/components/update-car-deal-sheet";
 
 import { usePathname, useParams } from "next/navigation";
+import Image from "next/image";
 
 type SidebarMenuItem = {
   label?: string;
@@ -32,7 +31,6 @@ type SidebarMenuItem = {
 };
 
 export function CarDealSidebar() {
-  const { offers } = useOffers();
   const pathname = usePathname();
   const params = useParams();
   const carDealId = params.carDealId as string;
@@ -72,10 +70,12 @@ export function CarDealSidebar() {
       <SidebarHeader>
         <Link href="/">
           <div className="flex h-20 items-center justify-between">
-            <img
+            <Image
               src={LeazzyLogo.src}
               alt="Leazzy.com Logo"
               className="w-48 object-cover object-center"
+              width={192}
+              height={192}
             />
           </div>
         </Link>

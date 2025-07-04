@@ -71,7 +71,7 @@ export function UpdateCarDealSheet({
     if (carDealId) {
       fetchCarDeal();
     }
-  }, [carDealId]);
+  }, [carDealId, supabase]);
 
   const handleSubmit = async (formData: FormData) => {
     if (!carDeal) return;

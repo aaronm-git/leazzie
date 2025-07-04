@@ -71,7 +71,7 @@ export function DealershipsTable({ dealerships }: DealershipsTableProps) {
       if (data) setContacts(data);
     };
     fetchContacts();
-  }, []);
+  }, [supabase]);
 
   // Helper function to get contact count for a dealership
   const getContactCount = (dealershipId: string) => {

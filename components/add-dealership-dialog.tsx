@@ -8,9 +8,6 @@ import { useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 
-import ReactMapboxGl, { Layer, Feature } from "react-mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-
 interface AddDealershipDialogProps {
   onDealershipCreated?: (dealershipId: string) => void;
 }

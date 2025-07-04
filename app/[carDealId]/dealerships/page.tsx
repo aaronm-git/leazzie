@@ -34,7 +34,7 @@ export default function DealershipsPage() {
     };
 
     fetchDealerships();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return <div>Loading...</div>;

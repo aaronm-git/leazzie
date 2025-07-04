@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useOffers, useOfferCalculations } from "@/providers/offer-provider";
+import Image from "next/image";
 
 export function DealsTable() {
   const { offers } = useOffers();
@@ -68,10 +69,12 @@ export function DealsTable() {
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           {row.original.product_image_url && (
-            <img
+            <Image
               src={row.original.product_image_url}
               alt={row.original.product_title}
               className="h-12 w-12 rounded-md object-cover"
+              width={48}
+              height={48}
             />
           )}
           <div>

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Calculator, Car, DollarSign, Percent, Calendar } from "lucide-react";
+import { useCallback } from "react";
 
 interface LeaseInputs {
   vehiclePrice: number;
@@ -85,7 +86,8 @@ export function LeaseCalculator() {
     return msrp * residualPercentage;
   };
 
-  const calculateLease = (inputs: LeaseInputs): LeaseCalculation => {
+  const calculateLease = useCallback(
+    (inputs: LeaseInputs): LeaseCalculation => {
     // Calculate taxes based on taxable amount
     const calculatedTaxes = calculateTaxes(
       inputs.sellingPrice,
@@ -120,12 +122,12 @@ export function LeaseCalculator() {
       financeFee,
       monthlyPayment,
     };
-  };
+  }, [calculateTaxes, calculateEstimatedResidual]);
 
   useEffect(() => {
     const result = calculateLease(inputs);
     setCalculation(result);
-  }, [inputs]);
+  }, [inputs, calculateLease]);
 
   const handleInputChange = (field: keyof LeaseInputs, value: string) => {
     const numericValue = Number.parseFloat(value) || 0;

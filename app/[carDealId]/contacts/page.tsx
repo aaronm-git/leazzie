@@ -39,7 +39,7 @@ export default function ContactsPage() {
     };
 
     fetchContacts();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
     return <div>Loading...</div>;

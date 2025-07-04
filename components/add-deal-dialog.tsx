@@ -42,7 +42,7 @@ export default function AddDealDialog() {
 
 function AddDealForm() {
   const supabase = createClient();
-  const { createOffer, refreshOffers } = useOffers();
+  const { createOffer } = useOffers();
   const params = useParams();
   const carDealId = params.carDealId as string;
 
@@ -83,7 +83,7 @@ function AddDealForm() {
     };
 
     fetchData();
-  }, []);
+  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
