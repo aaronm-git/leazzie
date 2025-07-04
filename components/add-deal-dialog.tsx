@@ -6,7 +6,7 @@ import { DialogTrigger } from "./ui/dialog";
 
 import { createClient } from "@/utils/supabase/client";
 import { Tables } from "@/database.types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import {
@@ -16,7 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useCarDeal } from "@/providers/car-deal-provider";
+import { useOffers } from "@/providers/offer-provider";
+import { useParams } from "next/navigation";
 import AddDealershipDialog from "./add-dealership-dialog";
 import AddContactDialog from "./add-contact-dialog";
 
@@ -29,7 +30,7 @@ export default function AddDealDialog() {
           Add New Deal
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Deal</DialogTitle>
         </DialogHeader>
@@ -41,24 +42,27 @@ export default function AddDealDialog() {
 
 function AddDealForm() {
   const supabase = createClient();
-  const { carDeal, dealerships, contacts, refreshDeals } = useCarDeal();
+  const { createOffer, refreshOffers } = useOffers();
+  const params = useParams();
+  const carDealId = params.carDealId as string;
+
+  const [dealerships, setDealerships] = useState<Tables<"dealerships">[]>([]);
+  const [contacts, setContacts] = useState<Tables<"contacts">[]>([]);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(
-    null
+    null,
   );
-  const [formData, setFormData] = useState<Tables<"deals">>({
-    id: "",
+  const [formData, setFormData] = useState<Partial<Tables<"offers">>>({
     product_title: "",
     product_image_url: "",
     product_link: "",
     product_specs: "",
     additional_fees: null,
-    car_deal_id: carDeal?.id || null,
-    created_at: null,
+    car_deal_id: carDealId,
     dealer_incentives: null,
     dealership_id: null,
     down_payment: null,
     interest_rate: null,
-    is_disqualified: null,
+    is_disqualified: false,
     lease_term: null,
     msrp: null,
     residual_value: null,
@@ -66,19 +70,35 @@ function AddDealForm() {
     tax_rate: null,
   });
 
+  // Fetch dealerships and contacts
+  useEffect(() => {
+    const fetchData = async () => {
+      const [dealershipsRes, contactsRes] = await Promise.all([
+        supabase.from("dealerships").select("*"),
+        supabase.from("contacts").select("*"),
+      ]);
+
+      if (dealershipsRes.data) setDealerships(dealershipsRes.data);
+      if (contactsRes.data) setContacts(contactsRes.data);
+    };
+
+    fetchData();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Prepare data for insertion (exclude auto-generated fields)
+    // Prepare data for insertion
     const insertData = {
-      product_title: formData.product_title,
-      product_image_url: formData.product_image_url || null,
-      product_link: formData.product_link || null,
-      product_specs: formData.product_specs || null,
+      product_title: formData.product_title!,
+      product_image_url: formData.product_image_url,
+      product_link: formData.product_link,
+      product_specs: formData.product_specs,
       additional_fees: formData.additional_fees,
-      car_deal_id: carDeal?.id || null,
+      car_deal_id: carDealId,
       dealer_incentives: formData.dealer_incentives,
       dealership_id: formData.dealership_id,
+      contact_id: selectedContactId,
       down_payment: formData.down_payment,
       interest_rate: formData.interest_rate,
       is_disqualified: formData.is_disqualified,
@@ -89,29 +109,22 @@ function AddDealForm() {
       tax_rate: formData.tax_rate,
     };
 
-    const { error } = await supabase.from("deals").insert(insertData);
-    if (error) {
-      console.error("Error adding deal:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
-    } else {
+    const result = await createOffer(insertData);
+    if (result) {
       console.log("Deal added successfully");
-      // Refresh only deals to show the new deal
-      await refreshDeals();
       // Reset form
       setFormData({
-        id: "",
         product_title: "",
         product_image_url: "",
         product_link: "",
         product_specs: "",
         additional_fees: null,
-        car_deal_id: carDeal?.id || null,
-        created_at: null,
+        car_deal_id: carDealId,
         dealer_incentives: null,
         dealership_id: null,
         down_payment: null,
         interest_rate: null,
-        is_disqualified: null,
+        is_disqualified: false,
         lease_term: null,
         msrp: null,
         residual_value: null,
@@ -123,8 +136,8 @@ function AddDealForm() {
   };
 
   const handleChange = (
-    field: keyof Tables<"deals">,
-    value: string | number | null
+    field: keyof Tables<"offers">,
+    value: string | number | null,
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -188,7 +201,7 @@ function AddDealForm() {
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Pricing Information</h3>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="msrp">MSRP ($)</Label>
             <Input
@@ -200,7 +213,7 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "msrp",
-                  e.target.value ? parseFloat(e.target.value) : null
+                  e.target.value ? parseFloat(e.target.value) : null,
                 )
               }
             />
@@ -217,14 +230,14 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "selling_price",
-                  e.target.value ? parseFloat(e.target.value) : null
+                  e.target.value ? parseFloat(e.target.value) : null,
                 )
               }
             />
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="down_payment">Down Payment ($)</Label>
             <Input
@@ -236,7 +249,7 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "down_payment",
-                  e.target.value ? parseFloat(e.target.value) : null
+                  e.target.value ? parseFloat(e.target.value) : null,
                 )
               }
             />
@@ -253,7 +266,7 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "additional_fees",
-                  e.target.value ? parseFloat(e.target.value) : null
+                  e.target.value ? parseFloat(e.target.value) : null,
                 )
               }
             />
@@ -267,7 +280,7 @@ function AddDealForm() {
           Dealership & Contact Information
         </h3>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           {/* Dealership Selection */}
           <div className="space-y-2">
             <Label htmlFor="dealership">Dealership *</Label>
@@ -313,7 +326,7 @@ function AddDealForm() {
                     .filter(
                       (contact) =>
                         !formData.dealership_id ||
-                        contact.dealership_id === formData.dealership_id
+                        contact.dealership_id === formData.dealership_id,
                     )
                     .map((contact) => (
                       <SelectItem key={contact.id} value={contact.id}>
@@ -336,7 +349,7 @@ function AddDealForm() {
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Lease Terms</h3>
 
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid gap-4 md:grid-cols-3">
           <div className="grid gap-2">
             <Label htmlFor="lease_term">Lease Term (months)</Label>
             <Input
@@ -348,7 +361,7 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "lease_term",
-                  e.target.value ? parseInt(e.target.value) : null
+                  e.target.value ? parseInt(e.target.value) : null,
                 )
               }
             />
@@ -366,7 +379,7 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "interest_rate",
-                  e.target.value ? parseFloat(e.target.value) : null
+                  e.target.value ? parseFloat(e.target.value) : null,
                 )
               }
             />
@@ -384,14 +397,14 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "tax_rate",
-                  e.target.value ? parseFloat(e.target.value) : null
+                  e.target.value ? parseFloat(e.target.value) : null,
                 )
               }
             />
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           <div className="grid gap-2">
             <Label htmlFor="residual_value">Residual Value ($)</Label>
             <Input
@@ -403,7 +416,7 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "residual_value",
-                  e.target.value ? parseFloat(e.target.value) : null
+                  e.target.value ? parseFloat(e.target.value) : null,
                 )
               }
             />
@@ -420,7 +433,7 @@ function AddDealForm() {
               onChange={(e) =>
                 handleChange(
                   "dealer_incentives",
-                  e.target.value ? parseFloat(e.target.value) : null
+                  e.target.value ? parseFloat(e.target.value) : null,
                 )
               }
             />
@@ -429,7 +442,7 @@ function AddDealForm() {
       </div>
 
       {/* Form Actions */}
-      <div className="flex justify-end space-x-2 pt-4 border-t">
+      <div className="flex justify-end space-x-2 border-t pt-4">
         <Button type="button" variant="outline">
           Cancel
         </Button>

@@ -7,7 +7,9 @@ import { Tables } from "@/database.types";
 import { useState } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { useCarDeal } from "@/providers/car-deal-provider";
+
+import ReactMapboxGl, { Layer, Feature } from "react-mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 
 interface AddDealershipDialogProps {
   onDealershipCreated?: (dealershipId: string) => void;
@@ -47,10 +49,8 @@ interface AddDealershipFormProps {
 
 function AddDealershipForm({ onSuccess }: AddDealershipFormProps) {
   const supabase = createClient();
-  const { carDeal, refreshDealerships } = useCarDeal();
   const [formData, setFormData] = useState<Partial<Tables<"dealerships">>>({
     name: "",
-    car_deal_id: carDeal?.id || null,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,21 +59,16 @@ function AddDealershipForm({ onSuccess }: AddDealershipFormProps) {
     const { data, error } = await supabase
       .from("dealerships")
       .insert({
-        ...formData,
         name: formData.name || "",
-        car_deal_id: carDeal?.id || null,
       })
       .select();
     if (error) {
       console.error("Error adding dealership:", error);
     } else {
       console.log("Dealership added successfully");
-      // Refresh only dealerships to show the new dealership
-      await refreshDealerships();
       // Reset form
       setFormData({
         name: "",
-        car_deal_id: carDeal?.id || null,
       });
       // Call success callback with the new dealership ID
       if (data && data[0] && onSuccess) {
@@ -84,7 +79,7 @@ function AddDealershipForm({ onSuccess }: AddDealershipFormProps) {
 
   const handleChange = (
     field: keyof Tables<"dealerships">,
-    value: string | null
+    value: string | null,
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -106,7 +101,7 @@ function AddDealershipForm({ onSuccess }: AddDealershipFormProps) {
         />
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4 border-t">
+      <div className="flex justify-end space-x-2 border-t pt-4">
         <Button type="button" variant="outline">
           Cancel
         </Button>

@@ -1,31 +1,39 @@
 "use client";
 
-import { useCarDeal } from "@/providers/car-deal-provider";
+import { useOffers } from "@/providers/offer-provider";
 import { FileText } from "lucide-react";
 import { EmptyTableState } from "@/components/empty-table-state";
-import { DealsTable } from "@/components/deals-table";
+import { DealsTable } from "@/components/offer-table";
 import AddDealDialog from "@/components/add-deal-dialog";
 
 export default function DealsPage() {
-  const { carDeal, deals } = useCarDeal();
+  const { offers, loading, error } = useOffers();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <>
       {/* <CarDealHeader /> */}
-      <div className="flex items-center justify-between mb-6 gap-4">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-1 flex items-center gap-2">
+          <h1 className="mb-1 flex items-center gap-2 text-3xl font-bold">
             <FileText className="h-7 w-7" />
-            Running Deals
+            Active Offers
           </h1>
           <p className="text-muted-foreground">
-            All lease deals for {carDeal.title}
+            All lease offers for this car.
           </p>
         </div>
 
         <AddDealDialog />
       </div>
-      {!deals || deals.length === 0 ? (
+      {!offers || offers.length === 0 ? (
         <EmptyTableState
           addDealDialog={<AddDealDialog />}
           title="No deals yet"

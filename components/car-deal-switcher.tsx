@@ -11,10 +11,64 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenuButton } from "@/components/ui/sidebar";
-import { useCarDeal } from "@/providers/car-deal-provider";
+import { useOffers } from "@/providers/offer-provider";
+import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
+import { Tables } from "@/database.types";
 
 export function CarDealSwitcher() {
-  const { carDeal, allCarDeals, deals } = useCarDeal();
+  const { offers } = useOffers();
+  const params = useParams();
+  const carDealId = params.carDealId as string;
+  const supabase = createClient();
+
+  const [carDeal, setCarDeal] = useState<Tables<"car_deals"> | null>(null);
+  const [allCarDeals, setAllCarDeals] = useState<Tables<"car_deals">[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCarDeals = async () => {
+      try {
+        const [currentCarDealRes, allCarDealsRes] = await Promise.all([
+          supabase.from("car_deals").select("*").eq("id", carDealId).single(),
+          supabase
+            .from("car_deals")
+            .select("*")
+            .order("created_at", { ascending: false }),
+        ]);
+
+        if (currentCarDealRes.data) {
+          setCarDeal(currentCarDealRes.data);
+        }
+
+        if (allCarDealsRes.data) {
+          setAllCarDeals(allCarDealsRes.data);
+        }
+      } catch (error) {
+        console.error("Error fetching car deals:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (carDealId) {
+      fetchCarDeals();
+    }
+  }, [carDealId]);
+
+  if (loading || !carDeal) {
+    return (
+      <SidebarMenuButton size="lg" className="border" disabled>
+        <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-10 items-center justify-center rounded-lg">
+          <Car className="size-5" />
+        </div>
+        <div className="grid flex-1 text-left text-sm leading-tight">
+          <span className="truncate font-medium">Loading...</span>
+        </div>
+      </SidebarMenuButton>
+    );
+  }
 
   return (
     <DropdownMenu>
@@ -37,7 +91,9 @@ export function CarDealSwitcher() {
           )}
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-medium">{carDeal.title}</span>
-            <span className="truncate text-xs">{deals?.length || 0} deals</span>
+            <span className="truncate text-xs">
+              {offers?.length || 0} deals
+            </span>
           </div>
           <ChevronsUpDown className="ml-auto" />
         </SidebarMenuButton>

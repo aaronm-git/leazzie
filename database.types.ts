@@ -36,6 +36,41 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_reviews: {
+        Row: {
+          comment: string | null
+          contact_id: string | null
+          created_at: string | null
+          id: string
+          rating: number | null
+          user_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_reviews_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
           created_at: string | null
@@ -76,37 +111,59 @@ export type Database = {
       }
       dealerships: {
         Row: {
-          car_deal_id: string | null
           created_at: string | null
           id: string
           name: string
         }
         Insert: {
-          car_deal_id?: string | null
           created_at?: string | null
           id?: string
           name: string
         }
         Update: {
-          car_deal_id?: string | null
           created_at?: string | null
           id?: string
           name?: string
         }
+        Relationships: []
+      }
+      negotiation_notes: {
+        Row: {
+          created_at: string | null
+          id: string
+          note: string
+          offer_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          note: string
+          offer_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          note?: string
+          offer_id?: string | null
+          user_id?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "dealerships_car_deal_id_fkey"
-            columns: ["car_deal_id"]
+            foreignKeyName: "negotiation_notes_offer_id_fkey"
+            columns: ["offer_id"]
             isOneToOne: false
-            referencedRelation: "car_deals"
+            referencedRelation: "offers"
             referencedColumns: ["id"]
           },
         ]
       }
-      deals: {
+      offers: {
         Row: {
           additional_fees: number | null
           car_deal_id: string | null
+          contact_id: string | null
           created_at: string | null
           dealer_incentives: number | null
           dealership_id: string | null
@@ -127,6 +184,7 @@ export type Database = {
         Insert: {
           additional_fees?: number | null
           car_deal_id?: string | null
+          contact_id?: string | null
           created_at?: string | null
           dealer_incentives?: number | null
           dealership_id?: string | null
@@ -147,6 +205,7 @@ export type Database = {
         Update: {
           additional_fees?: number | null
           car_deal_id?: string | null
+          contact_id?: string | null
           created_at?: string | null
           dealer_incentives?: number | null
           dealership_id?: string | null
@@ -166,14 +225,21 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "deals_car_deal_id_fkey"
+            foreignKeyName: "offers_car_deal_id_fkey"
             columns: ["car_deal_id"]
             isOneToOne: false
             referencedRelation: "car_deals"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "deals_dealership_id_fkey"
+            foreignKeyName: "offers_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_dealership_id_fkey"
             columns: ["dealership_id"]
             isOneToOne: false
             referencedRelation: "dealerships"

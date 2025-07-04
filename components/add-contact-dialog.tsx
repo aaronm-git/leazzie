@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { DialogTrigger } from "./ui/dialog";
 import { createClient } from "@/utils/supabase/client";
 import { Tables } from "@/database.types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import {
@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useCarDeal } from "@/providers/car-deal-provider";
 
 interface AddContactDialogProps {
   onContactCreated?: (contactId: string) => void;
@@ -54,7 +53,7 @@ interface AddContactFormProps {
 
 function AddContactForm({ onSuccess }: AddContactFormProps) {
   const supabase = createClient();
-  const { dealerships, refreshContacts } = useCarDeal();
+  const [dealerships, setDealerships] = useState<Tables<"dealerships">[]>([]);
   const [formData, setFormData] = useState<Partial<Tables<"contacts">>>({
     name: "",
     email: "",
@@ -62,6 +61,16 @@ function AddContactForm({ onSuccess }: AddContactFormProps) {
     title: "",
     dealership_id: null,
   });
+
+  useEffect(() => {
+    const fetchDealerships = async () => {
+      const { data } = await supabase.from("dealerships").select("*");
+
+      if (data) setDealerships(data);
+    };
+
+    fetchDealerships();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +86,6 @@ function AddContactForm({ onSuccess }: AddContactFormProps) {
       console.error("Error adding contact:", error);
     } else {
       console.log("Contact added successfully");
-      // Refresh only contacts to show the new contact
-      await refreshContacts();
       // Reset form
       setFormData({
         name: "",
@@ -96,7 +103,7 @@ function AddContactForm({ onSuccess }: AddContactFormProps) {
 
   const handleChange = (
     field: keyof Tables<"contacts">,
-    value: string | null
+    value: string | null,
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -174,7 +181,7 @@ function AddContactForm({ onSuccess }: AddContactFormProps) {
         </Select>
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4 border-t">
+      <div className="flex justify-end space-x-2 border-t pt-4">
         <Button type="button" variant="outline">
           Cancel
         </Button>

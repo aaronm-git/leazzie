@@ -1,28 +1,20 @@
 import { notFound } from "next/navigation";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { CarDealSidebar } from "@/components/car-deal-sidebar";
-import { CarDealProvider } from "@/providers/car-deal-provider";
-import { fetchCarDealData } from "@/lib/car-deal-data";
-import { Analytics } from "@vercel/analytics/next"
-export default async function DealsPage({
-  children,
-  params,
-}: {
+import { Analytics } from "@vercel/analytics/next";
+import { OfferProvider } from "@/providers/offer-provider";
+
+interface DealsPageProps {
   children: React.ReactNode;
-  params: Promise<{ carDealId: string }>;
-}) {
-  const { carDealId } = await params;
+  params: { carDealId: string };
+}
 
+export default async function DealsPage({ children, params }: DealsPageProps) {
   try {
-    const data = await fetchCarDealData(carDealId);
-
-    const initialData = {
-      ...data,
-      carDealId,
-    };
+    const { carDealId } = params;
 
     return (
-      <CarDealProvider initialData={initialData}>
+      <OfferProvider carDealId={carDealId}>
         <SidebarProvider>
           <CarDealSidebar />
           <SidebarInset>
@@ -30,7 +22,7 @@ export default async function DealsPage({
           </SidebarInset>
           <Analytics />
         </SidebarProvider>
-      </CarDealProvider>
+      </OfferProvider>
     );
   } catch {
     notFound();

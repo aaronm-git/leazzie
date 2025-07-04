@@ -13,13 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  Calendar,
-  MapPin,
-  Users,
-  ChevronDown,
-} from "lucide-react";
+import { ArrowUpDown, Calendar, MapPin, ChevronDown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -38,24 +32,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tables } from "@/database.types";
-import { useOffers } from "@/providers/offer-provider";
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { useOffers, useOfferCalculations } from "@/providers/offer-provider";
 
-type DealershipWithCounts = Tables<"dealerships"> & {
-  contactCount: number;
-  dealsCount: number;
-  status: "Active" | "Inactive";
-};
-
-interface DealershipsTableProps {
-  dealerships: Tables<"dealerships">[];
-}
-
-export function DealershipsTable({ dealerships }: DealershipsTableProps) {
+export function DealsTable() {
   const { offers } = useOffers();
-  const [contacts, setContacts] = useState<Tables<"contacts">[]>([]);
+  const { calculateMonthlyPayment } = useOfferCalculations();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -63,50 +44,56 @@ export function DealershipsTable({ dealerships }: DealershipsTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const supabase = createClient();
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      const { data } = await supabase.from("contacts").select("*");
-      if (data) setContacts(data);
-    };
-    fetchContacts();
-  }, []);
+  // Transform offers data to include calculated monthly payment
+  const data = offers.map((offer) => ({
+    ...offer,
+    monthlyPayment: calculateMonthlyPayment(offer),
+  }));
 
-  // Helper function to get contact count for a dealership
-  const getContactCount = (dealershipId: string) => {
-    return contacts.filter((contact) => contact.dealership_id === dealershipId)
-      .length;
-  };
-
-  // Helper function to get deals count for a dealership
-  const getDealsCount = (dealershipId: string) => {
-    return offers.filter((offer) => offer.dealership_id === dealershipId)
-      .length;
-  };
-
-  // Transform dealerships data to include counts
-  const data: DealershipWithCounts[] = dealerships.map((dealership) => {
-    const contactCount = getContactCount(dealership.id);
-    const dealsCount = getDealsCount(dealership.id);
-    return {
-      ...dealership,
-      contactCount,
-      dealsCount,
-      status: dealsCount > 0 ? "Active" : "Inactive",
-    };
-  });
-
-  const columns: ColumnDef<DealershipWithCounts>[] = [
+  const columns: ColumnDef<(typeof data)[0]>[] = [
     {
-      accessorKey: "name",
+      accessorKey: "product_title",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Dealership Name
+            Product
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="flex items-center gap-3">
+          {row.original.product_image_url && (
+            <img
+              src={row.original.product_image_url}
+              alt={row.original.product_title}
+              className="h-12 w-12 rounded-md object-cover"
+            />
+          )}
+          <div>
+            <div className="font-medium">{row.getValue("product_title")}</div>
+            {row.original.product_specs && (
+              <div className="text-muted-foreground text-sm">
+                {row.original.product_specs}
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "dealerships.name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Dealership
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -114,71 +101,117 @@ export function DealershipsTable({ dealerships }: DealershipsTableProps) {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           <MapPin className="text-muted-foreground h-4 w-4" />
-          <div className="font-medium">{row.getValue("name")}</div>
+          {row.original.dealership_id || "Unknown Dealership"}
         </div>
       ),
     },
     {
-      accessorKey: "contactCount",
+      accessorKey: "msrp",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Contacts
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1">
-          <Users className="text-muted-foreground h-4 w-4" />
-          <span>{row.getValue("contactCount")}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "dealsCount",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Active Deals
+            MSRP
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const dealsCount = row.getValue("dealsCount") as number;
-        return (
-          <Badge variant={dealsCount > 0 ? "default" : "secondary"}>
-            {dealsCount} {dealsCount === 1 ? "deal" : "deals"}
-          </Badge>
+        const msrp = row.getValue("msrp") as number;
+        return msrp ? (
+          <span className="font-mono">${msrp.toLocaleString()}</span>
+        ) : (
+          <span className="text-muted-foreground">-</span>
         );
       },
     },
     {
-      accessorKey: "created_at",
+      accessorKey: "selling_price",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Created
+            Selling Price
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const date = row.getValue("created_at") as string;
-        return date ? (
+        const sellingPrice = row.getValue("selling_price") as number;
+        return sellingPrice ? (
+          <span className="font-mono">${sellingPrice.toLocaleString()}</span>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        );
+      },
+    },
+    {
+      accessorKey: "down_payment",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Down Payment
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const downPayment = row.getValue("down_payment") as number;
+        return (
+          <span className="font-mono">
+            ${downPayment ? downPayment.toLocaleString() : "0"}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "monthlyPayment",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Monthly Payment
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const monthlyPayment = row.getValue("monthlyPayment") as number;
+        return (
+          <span className="font-mono">
+            ${Math.round(monthlyPayment).toLocaleString()}/mo
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "lease_term",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Term
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const leaseTerm = row.getValue("lease_term") as number;
+        return leaseTerm ? (
           <div className="flex items-center gap-1">
             <Calendar className="text-muted-foreground h-4 w-4" />
-            <span>{new Date(date).toLocaleDateString()}</span>
+            <span>{leaseTerm} months</span>
           </div>
         ) : (
           <span className="text-muted-foreground">-</span>
@@ -186,7 +219,7 @@ export function DealershipsTable({ dealerships }: DealershipsTableProps) {
       },
     },
     {
-      accessorKey: "status",
+      accessorKey: "is_disqualified",
       header: ({ column }) => {
         return (
           <Button
@@ -199,10 +232,10 @@ export function DealershipsTable({ dealerships }: DealershipsTableProps) {
         );
       },
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
+        const isDisqualified = row.getValue("is_disqualified") as boolean;
         return (
-          <Badge variant={status === "Active" ? "default" : "secondary"}>
-            {status}
+          <Badge variant={isDisqualified ? "destructive" : "default"}>
+            {isDisqualified ? "Disqualified" : "Active"}
           </Badge>
         );
       },
@@ -231,18 +264,22 @@ export function DealershipsTable({ dealerships }: DealershipsTableProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>All Dealerships ({dealerships.length})</CardTitle>
+        <CardTitle>All Offers ({offers.length})</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="w-full">
           <div className="flex items-center py-4">
             <Input
-              placeholder="Filter dealerships..."
+              placeholder="Filter products..."
               value={
-                (table.getColumn("name")?.getFilterValue() as string) ?? ""
+                (table
+                  .getColumn("product_title")
+                  ?.getFilterValue() as string) ?? ""
               }
               onChange={(event) =>
-                table.getColumn("name")?.setFilterValue(event.target.value)
+                table
+                  .getColumn("product_title")
+                  ?.setFilterValue(event.target.value)
               }
               className="max-w-sm"
             />

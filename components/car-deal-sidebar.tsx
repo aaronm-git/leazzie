@@ -19,10 +19,10 @@ import { SidebarMenuButton } from "@/components/ui/sidebar";
 import { Building2, Users, FileText, FileCog } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { CarDealSwitcher } from "./car-deal-switcher";
-import { useCarDeal } from "@/providers/car-deal-provider";
+import { useOffers } from "@/providers/offer-provider";
 import { UpdateCarDealSheet } from "@/components/update-car-deal-sheet";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 
 type SidebarMenuItem = {
   label?: string;
@@ -32,16 +32,14 @@ type SidebarMenuItem = {
 };
 
 export function CarDealSidebar() {
-  const { deals, dealerships, contacts, carDealId } = useCarDeal();
+  const { offers } = useOffers();
   const pathname = usePathname();
-
-  const isDealsPage = pathname === `/${carDealId}`;
-  const isDealershipsPage = pathname === `/${carDealId}/dealerships`;
-  const isContactsPage = pathname === `/${carDealId}/contacts`;
+  const params = useParams();
+  const carDealId = params.carDealId as string;
 
   const sideBarMenuItems: SidebarMenuItem[] = [
     {
-      label: "Deals",
+      label: "Offers",
       href: `/${carDealId}`,
       icon: <FileText className="h-4 w-4" />,
       type: "link",
@@ -107,7 +105,7 @@ export function CarDealSidebar() {
                           className="hover:not-[.active]:bg-stone-200"
                         >
                           <FileCog className="h-4 w-4" />
-                          <span>Deal Settings</span>
+                          <span>Car Deal Settings</span>
                         </SidebarMenuButton>
                       </UpdateCarDealSheet>
                     </SidebarMenuItem>

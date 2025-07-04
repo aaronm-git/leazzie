@@ -11,13 +11,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import { useCarDeal } from "@/providers/car-deal-provider";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import {
   Dialog,
   DialogClose,
@@ -29,6 +28,8 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Tables } from "@/database.types";
 
 export function UpdateCarDealSheet({
   children,
@@ -36,10 +37,45 @@ export function UpdateCarDealSheet({
   children: React.ReactNode;
 }) {
   const supabase = createClient();
-  const { carDeal } = useCarDeal();
   const router = useRouter();
+  const params = useParams();
+  const carDealId = params.carDealId as string;
+
+  const [carDeal, setCarDeal] = useState<Tables<"car_deals"> | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCarDeal = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("car_deals")
+          .select("*")
+          .eq("id", carDealId)
+          .single();
+
+        if (error) {
+          console.error("Error fetching car deal:", error);
+          return;
+        }
+
+        if (data) {
+          setCarDeal(data);
+        }
+      } catch (error) {
+        console.error("Error fetching car deal:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (carDealId) {
+      fetchCarDeal();
+    }
+  }, [carDealId]);
 
   const handleSubmit = async (formData: FormData) => {
+    if (!carDeal) return;
+
     console.log("handleSubmit");
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
@@ -60,6 +96,8 @@ export function UpdateCarDealSheet({
   };
 
   const handleDelete = async () => {
+    if (!carDeal) return;
+
     const { error } = await supabase
       .from("car_deals")
       .delete()
@@ -73,6 +111,20 @@ export function UpdateCarDealSheet({
       router.push("/");
     }
   };
+
+  if (loading || !carDeal) {
+    return (
+      <Sheet>
+        <SheetTrigger asChild>{children}</SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Loading...</SheetTitle>
+          </SheetHeader>
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -84,7 +136,7 @@ export function UpdateCarDealSheet({
         <form
           id="update-car-deal-form"
           action={handleSubmit}
-          className="grid flex-1 auto-rows-min gap-6 px-4 space-y-4"
+          className="grid flex-1 auto-rows-min gap-6 space-y-4 px-4"
         >
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">

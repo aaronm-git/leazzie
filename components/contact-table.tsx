@@ -11,16 +11,21 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCarDeal } from "@/providers/car-deal-provider";
+import { Tables } from "@/database.types";
 
-export function ContactsTable() {
-  const { contacts, dealerships } = useCarDeal();
+interface ContactsTableProps {
+  contacts: (Tables<"contacts"> & {
+    dealerships?: Tables<"dealerships">;
+  })[];
+}
 
+export function ContactsTable({ contacts }: ContactsTableProps) {
   // Helper function to get dealership name for a contact
-  const getDealershipName = (dealershipId: string | null) => {
-    if (!dealershipId) return "No Dealership";
-    const dealership = dealerships.find((d) => d.id === dealershipId);
-    return dealership?.name || "Unknown Dealership";
+  const getDealershipName = (contact: ContactsTableProps["contacts"][0]) => {
+    if (contact.dealerships?.name) {
+      return contact.dealerships.name;
+    }
+    return contact.dealership_id ? "Unknown Dealership" : "No Dealership";
   };
 
   return (
@@ -45,7 +50,7 @@ export function ContactsTable() {
               <TableRow key={contact.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
+                    <User className="text-muted-foreground h-4 w-4" />
                     <div className="font-medium">{contact.name}</div>
                   </div>
                 </TableCell>
@@ -59,7 +64,7 @@ export function ContactsTable() {
                 <TableCell>
                   {contact.email ? (
                     <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <Mail className="text-muted-foreground h-4 w-4" />
                       <a
                         href={`mailto:${contact.email}`}
                         className="text-blue-600 hover:underline"
@@ -74,7 +79,7 @@ export function ContactsTable() {
                 <TableCell>
                   {contact.phone ? (
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <Phone className="text-muted-foreground h-4 w-4" />
                       <a
                         href={`tel:${contact.phone}`}
                         className="text-blue-600 hover:underline"
@@ -88,14 +93,14 @@ export function ContactsTable() {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Building className="h-4 w-4 text-muted-foreground" />
-                    <span>{getDealershipName(contact.dealership_id)}</span>
+                    <Building className="text-muted-foreground h-4 w-4" />
+                    <span>{getDealershipName(contact)}</span>
                   </div>
                 </TableCell>
                 <TableCell>
                   {contact.created_at ? (
                     <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <Calendar className="text-muted-foreground h-4 w-4" />
                       <span>
                         {new Date(contact.created_at).toLocaleDateString()}
                       </span>
